@@ -14,16 +14,59 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data, onReset }) =
   const handleDownload = async () => {
     try {
       setDownloading(true);
-      // Fetch the image as a blob to bypass CORS download attribute issues if possible
-      // Note: This still relies on the image server allowing the request or using a proxy
-      const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(data.url)}`);
-      if (!response.ok) throw new Error('Network error');
-      const blob = await response.blob();
+      
+      let blob: Blob | null = null;
+      let usedExtension = 'jpg';
+
+      // Strategy 1: CORSProxy.io (Fast, direct pipe)
+      if (!blob) {
+        try {
+          const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(data.url)}`);
+          if (res.ok) {
+            blob = await res.blob();
+            // Try to guess extension from content-type
+            const type = res.headers.get('content-type');
+            if (type && type.includes('png')) usedExtension = 'png';
+            else if (type && type.includes('webp')) usedExtension = 'webp';
+          }
+        } catch (e) {
+          console.warn('Strategy 1 (CORSProxy) failed:', e);
+        }
+      }
+
+      // Strategy 2: wsrv.nl (Specialized Image Proxy - very reliable)
+      if (!blob) {
+        try {
+          // We ask for output=jpg to ensure compatibility if webp isn't desired, 
+          // or we can remove output param to get original. Let's keep original format if possible.
+          const res = await fetch(`https://wsrv.nl/?url=${encodeURIComponent(data.url)}`);
+          if (res.ok) {
+             blob = await res.blob();
+          }
+        } catch (e) {
+           console.warn('Strategy 2 (wsrv) failed:', e);
+        }
+      }
+
+      // Strategy 3: AllOrigins (Fallback)
+      if (!blob) {
+        try {
+          const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(data.url)}`);
+          if (res.ok) blob = await res.blob();
+        } catch (e) {
+          console.warn('Strategy 3 (AllOrigins) failed:', e);
+        }
+      }
+
+      if (!blob) {
+        throw new Error('All download strategies failed');
+      }
+
       const blobUrl = URL.createObjectURL(blob);
       
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = `cover-snap-${Date.now()}.jpg`;
+      link.download = `cover-snap-${Date.now()}.${usedExtension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -32,8 +75,8 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data, onReset }) =
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (error) {
-      console.error('Download failed, trying direct link', error);
-      // Fallback
+      console.error('Download failed, trying direct link fallback', error);
+      // Ultimate Fallback: Open in new tab if all fetch attempts fail
       window.open(data.url, '_blank');
     } finally {
       setDownloading(false);
