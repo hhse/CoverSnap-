@@ -11,7 +11,14 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data, onReset }) =
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
+  const vibrate = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
   const handleDownload = async () => {
+    vibrate();
     try {
       setDownloading(true);
       
@@ -135,13 +142,17 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data, onReset }) =
             href={data.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={vibrate}
             className="flex items-center justify-center gap-2 h-12 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-[0.98] hover:shadow-md"
           >
             <ExternalLink size={16} />
             Original
           </a>
           <button
-            onClick={onReset}
+            onClick={() => {
+              vibrate();
+              onReset();
+            }}
             className="flex items-center justify-center gap-2 h-12 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-[0.98] hover:shadow-md"
           >
              <ImageIcon size={16} />

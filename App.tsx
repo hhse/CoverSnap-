@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Link, ClipboardPaste, ArrowRight, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Link, ClipboardPaste, ArrowRight, Loader2, Image as ImageIcon, AlertCircle, History } from 'lucide-react';
 import { Background } from './components/Background';
 import { GlassCard } from './components/GlassCard';
 import { ResultDisplay } from './components/ResultDisplay';
+import { HistoryPanel } from './components/HistoryPanel';
 import { extractCoverImage } from './services/extractorService';
-import { ExtractorState } from './types';
+import { ExtractorState, HistoryItem } from './types';
 
 const App: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
@@ -15,6 +16,32 @@ const App: React.FC = () => {
     error: null,
     data: null,
   });
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  
+  // Load history on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('coversnap_history');
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse history', e);
+      }
+    }
+  }, []);
+
+  // Save history logic
+  const saveToHistory = (item: HistoryItem) => {
+    const newHistory = [item, ...history.filter(h => h.url !== item.url)].slice(0, 20); // Limit to 20
+    setHistory(newHistory);
+    localStorage.setItem('coversnap_history', JSON.stringify(newHistory));
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem('coversnap_history');
+  };
   
   // Clear error when input changes
   useEffect(() => {
@@ -23,7 +50,14 @@ const App: React.FC = () => {
     }
   }, [inputValue]);
 
+  const vibrate = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
   const handlePaste = async () => {
+    vibrate();
     try {
       const text = await navigator.clipboard.readText();
       setInputValue(text);
@@ -36,10 +70,18 @@ const App: React.FC = () => {
     if (e) e.preventDefault();
     if (!inputValue.trim()) return;
 
+    vibrate();
     setState({ isLoading: true, error: null, data: null });
 
     try {
       const result = await extractCoverImage(inputValue.trim());
+      
+      const historyItem: HistoryItem = {
+        ...result,
+        timestamp: Date.now()
+      };
+      saveToHistory(historyItem);
+      
       setState({ isLoading: false, error: null, data: result });
     } catch (err: any) {
       setState({ 
@@ -55,13 +97,30 @@ const App: React.FC = () => {
     setState({ isLoading: false, error: null, data: null });
   };
 
+  const loadFromHistory = (item: HistoryItem) => {
+     setInputValue(item.originalUrl);
+     setState({
+       isLoading: false,
+       error: null,
+       data: item
+     });
+  };
+
   return (
     <>
       <Background />
       <div className="min-h-screen flex flex-col p-6 max-w-lg mx-auto relative z-10 font-sans">
         
         {/* Header */}
-        <header className="mt-16 mb-12 text-center space-y-4">
+        <header className="mt-16 mb-12 text-center space-y-4 relative">
+          <button 
+             onClick={() => { vibrate(); setIsHistoryOpen(true); }}
+             className="absolute top-0 right-0 p-3 bg-white/50 backdrop-blur-md rounded-full text-slate-600 hover:bg-white/80 hover:text-blue-600 transition-all shadow-sm hover:scale-105 active:scale-95"
+             title="History"
+          >
+             <History size={20} />
+          </button>
+
           <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-white/70 backdrop-blur-md shadow-sm ring-1 ring-white/80 animate-slide-up transition-transform duration-300 hover:scale-105 cursor-default">
             <ImageIcon className="text-blue-500 w-8 h-8" />
           </div>
@@ -79,7 +138,7 @@ const App: React.FC = () => {
             <GlassCard delay={300} className="space-y-6 shadow-xl">
               <div className="text-center space-y-1 mb-6">
                  <h2 className="text-xl font-bold text-slate-800">Get Started</h2>
-                 <p className="text-sm text-slate-500">Paste a link from WeChat, Zhihu, etc.</p>
+                 <p className="text-sm text-slate-500">Paste link from WeChat, Zhihu, Bilibili...</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -158,7 +217,7 @@ const App: React.FC = () => {
               </div>
 
               {/* Supported Platforms Hints */}
-              <div className="pt-6 border-t border-slate-200/50 grid grid-cols-3 gap-2 text-center">
+              <div className="pt-6 border-t border-slate-200/50 grid grid-cols-4 gap-2 text-center">
                  <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity cursor-default group">
                     <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -177,6 +236,12 @@ const App: React.FC = () => {
                     </div>
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">RedNote</span>
                  </div>
+                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity cursor-default group">
+                    <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                    </div>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Bilibili</span>
+                 </div>
               </div>
 
             </GlassCard>
@@ -185,7 +250,7 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-slate-800">Cover Found</h2>
                 <button 
-                  onClick={handleReset} 
+                  onClick={() => { vibrate(); handleReset(); }} 
                   className="text-slate-400 hover:text-slate-700 text-sm font-medium px-3 py-1 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95"
                 >
                   Close
@@ -199,6 +264,15 @@ const App: React.FC = () => {
         <footer className="mt-10 py-6 text-center text-slate-400 text-xs font-medium border-t border-slate-200/50">
           <p>© 2024 CoverSnap. Designed for Creators.</p>
         </footer>
+        
+        {/* History Panel */}
+        <HistoryPanel 
+           isOpen={isHistoryOpen} 
+           onClose={() => setIsHistoryOpen(false)} 
+           history={history}
+           onSelect={loadFromHistory}
+           onClear={clearHistory}
+        />
       </div>
     </>
   );
