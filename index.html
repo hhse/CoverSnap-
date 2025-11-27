@@ -22,7 +22,8 @@
               }
             },
             animation: {
-              'blob': 'blob 15s infinite',
+              'blob': 'blob 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)', 
+              'blob-reverse': 'blobReverse 18s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)',
               'fade-in': 'fadeIn 0.4s ease-out forwards',
               'fade-out': 'fadeOut 0.4s ease-out forwards',
               'slide-up': 'slideUp 0.5s ease-out forwards',
@@ -30,10 +31,17 @@
             },
             keyframes: {
               blob: {
-                '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                '0%': { transform: 'translate(0, 0) scale(1)' },
+                '25%': { transform: 'translate(20%, -20%) scale(1.1)' },
+                '50%': { transform: 'translate(-20%, 20%) scale(0.9)' },
+                '75%': { transform: 'translate(20%, 20%) scale(1.05)' },
+                '100%': { transform: 'translate(-20%, -20%) scale(1)' },
+              },
+              blobReverse: {
+                 '0%': { transform: 'translate(0, 0) scale(1)' },
+                 '33%': { transform: 'translate(-25%, 20%) scale(1.2)' },
+                 '66%': { transform: 'translate(20%, -10%) scale(0.8)' },
+                 '100%': { transform: 'translate(-10%, 10%) scale(1)' },
               },
               fadeIn: {
                 '0%': { opacity: '0', transform: 'translateY(-10px)' },
@@ -54,7 +62,7 @@
     </script>
     <style>
       body {
-        background-color: #f8fafc;
+        background-color: #f0fdfa; /* Very light teal base */
         color: #334155;
       }
       /* Custom scrollbar for webkit */
@@ -67,6 +75,18 @@
       ::-webkit-scrollbar-thumb {
         background: rgba(0, 0, 0, 0.1);
         border-radius: 3px;
+      }
+      .animation-delay-2000 {
+        animation-delay: 2s;
+      }
+      .animation-delay-4000 {
+        animation-delay: 4s;
+      }
+      .animation-delay-6000 {
+        animation-delay: 6s;
+      }
+      .animation-delay-8000 {
+        animation-delay: 8s;
       }
     </style>
   <script type="importmap">

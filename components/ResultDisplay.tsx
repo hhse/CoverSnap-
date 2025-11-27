@@ -104,11 +104,12 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data, onReset }) =
           onClick={handleDownload}
           disabled={downloading}
           className={`
-            relative overflow-hidden w-full h-12 rounded-xl font-medium text-white shadow-lg transition-all duration-300
+            relative overflow-hidden w-full h-12 rounded-xl font-medium text-white shadow-lg transition-all duration-300 transform
             flex items-center justify-center gap-2
+            hover:scale-[1.02] active:scale-[0.98]
             ${downloadSuccess 
               ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20' 
-              : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20 hover:scale-[1.02] active:scale-95'}
+              : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20'}
           `}
         >
           {downloadSuccess ? (
@@ -134,14 +135,14 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data, onReset }) =
             href={data.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium transition-colors shadow-sm"
+            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-[0.98] hover:shadow-md"
           >
             <ExternalLink size={16} />
             Original
           </a>
           <button
             onClick={onReset}
-            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium transition-colors shadow-sm"
+            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-[0.98] hover:shadow-md"
           >
              <ImageIcon size={16} />
             New Image

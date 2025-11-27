@@ -62,7 +62,7 @@ const App: React.FC = () => {
         
         {/* Header */}
         <header className="mt-16 mb-12 text-center space-y-4">
-          <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-white/70 backdrop-blur-md shadow-sm ring-1 ring-white/80 animate-slide-up">
+          <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-white/70 backdrop-blur-md shadow-sm ring-1 ring-white/80 animate-slide-up transition-transform duration-300 hover:scale-105 cursor-default">
             <ImageIcon className="text-blue-500 w-8 h-8" />
           </div>
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-slate-800 via-blue-600 to-slate-800 tracking-tight drop-shadow-sm animate-slide-up" style={{ animationDelay: '100ms' }}>
@@ -113,7 +113,7 @@ const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={handlePaste}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors transform hover:scale-110 active:scale-95"
                       title="Paste from clipboard"
                     >
                       <ClipboardPaste className="h-5 w-5" />
@@ -130,7 +130,7 @@ const App: React.FC = () => {
                     transition-all duration-300 transform
                     ${state.isLoading || !inputValue 
                       ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none' 
-                      : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:scale-[0.98]'}
+                      : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:shadow-blue-500/40 hover:scale-[1.02] hover:-translate-y-1 active:scale-[0.98]'}
                   `}
                 >
                   {state.isLoading ? (
@@ -184,7 +184,10 @@ const App: React.FC = () => {
             <GlassCard delay={0} className="shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-slate-800">Cover Found</h2>
-                <button onClick={handleReset} className="text-slate-400 hover:text-slate-700 text-sm font-medium px-3 py-1 hover:bg-slate-100 rounded-lg transition-colors">
+                <button 
+                  onClick={handleReset} 
+                  className="text-slate-400 hover:text-slate-700 text-sm font-medium px-3 py-1 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95"
+                >
                   Close
                 </button>
               </div>
